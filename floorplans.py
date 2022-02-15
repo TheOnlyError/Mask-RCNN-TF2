@@ -20,7 +20,7 @@ import numpy as np
 # Root directory of the project
 from mrcnn.model import MaskRCNN
 
-ROOT_DIR = os.path.abspath("../")
+ROOT_DIR = os.path.abspath("/")
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 COCO_WEIGHTS_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 
@@ -96,7 +96,8 @@ class FloorPlansDataset(utils.Dataset):
         for image_id in files_set:
             self.add_image(
                 "floorplans",
-                image_id=image_id)
+                image_id=image_id,
+                path=None)
 
     def load_image(self, image_id):
         """Generate an image from the specs of the given image ID.
