@@ -20,7 +20,7 @@ import numpy as np
 # Root directory of the project
 from mrcnn.model import MaskRCNN
 
-ROOT_DIR = os.path.abspath("../../")
+ROOT_DIR = os.path.abspath("../")
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 COCO_WEIGHTS_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 
