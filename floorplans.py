@@ -107,6 +107,7 @@ class FloorPlansDataset(utils.Dataset):
         """
         img = mpimg.imread('rooms_augment/{}.jpg'.format(image_id))
         return img
+        # return cv2.resize(img, (512, 512), interpolation=cv2.INTER_AREA)
 
     def image_reference(self, image_id):
         """Return the shapes data of the image."""
@@ -124,9 +125,13 @@ class FloorPlansDataset(utils.Dataset):
         class_ids: a 1D array of class IDs of the instance masks.
         """
         openings = mpimg.imread('rooms_augment/{}_close.png'.format(image_id))
+        # openings = cv2.resize(openings, (512, 512), interpolation=cv2.INTER_AREA)
+        openings = openings > 0
         walls = mpimg.imread('rooms_augment/{}_wall.png'.format(image_id))
-        img = np.stack(np.array([openings, walls]), -1)
-        return img
+        # walls = cv2.resize(walls, (512, 512), interpolation=cv2.INTER_AREA)
+        walls = walls > 0
+        img = np.stack((openings, walls), -1)
+        return img, np.array([1, 2])
 
 
 def train():
