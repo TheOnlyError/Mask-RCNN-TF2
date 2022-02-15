@@ -6,6 +6,8 @@ results/
 temp/
 test/
 
+*.zip
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -56,3 +58,4 @@ pip-delete-this-directory.txt
 .venv
 venv/
 ENV/
+/rooms_augment/
