@@ -13,6 +13,7 @@ import datetime
 import re
 import math
 import logging
+import time
 from collections import OrderedDict
 import multiprocessing
 import numpy as np
@@ -2274,9 +2275,12 @@ class MaskRCNN():
                 print('Re-starting from epoch %d' % self.epoch)
 
         # Directory for training logs
-#        self.log_dir = os.path.join(self.model_dir, "{}{:%Y%m%dT%H%M}".format(
-#            self.config.NAME.lower(), now))
-        self.log_dir = "//logdir//train"
+       # self.log_dir = os.path.join(self.model_dir, "{}{:%Y%m%dT%H%M}".format(
+       #     self.config.NAME.lower(), now))
+        path = self.model_dir + '/' + time.strftime("%Y%m%d-%H%M")
+        os.mkdir(path)
+        self.log_dir = path
+
 
         # Path to save after each epoch. Include placeholders that get filled by Keras.
         self.checkpoint_path = os.path.join(self.log_dir, "mask_rcnn_{}_*epoch*.h5".format(
