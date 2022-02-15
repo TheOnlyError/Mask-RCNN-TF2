@@ -127,8 +127,7 @@ class FloorPlansDataset(utils.Dataset):
 
 
 def train():
-    config = FloorPlansConfig
-    config.display()
+    config = FloorPlansConfig()
     model = MaskRCNN(mode="training", config=config,
                      model_dir=DEFAULT_LOGS_DIR)
 
