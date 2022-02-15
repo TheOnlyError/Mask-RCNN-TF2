@@ -2387,7 +2387,9 @@ class MaskRCNN():
             max_queue_size=100,
             workers=workers,
             use_multiprocessing=True,
+            verbose=2
         )
+
         self.epoch = max(self.epoch, epochs)
 
     def mold_inputs(self, images):
