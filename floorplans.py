@@ -46,6 +46,22 @@ class FloorPlansConfig(Config):
     # Number of classes (including background)
     NUM_CLASSES = 1 + 2  # background + wall/opening
 
+    IMAGE_MIN_DIM = 512
+    IMAGE_MAX_DIM = 512
+
+    path = "annotations/rooms_augment/"
+    files = os.listdir(path)
+    files_set = []
+    for file in files:
+        files_set.append(file.split(".")[0].split("_")[0])
+    files_set = list(dict.fromkeys(files_set))
+    random.shuffle(files_set)
+
+    train_size = int(0.8 * len(files_set))
+
+    STEPS_PER_EPOCH = train_size
+    VALIDATION_STEPS = len(files_set) - train_size
+
 
 class FloorPlansDataset(utils.Dataset):
     """Generates the shapes synthetic dataset. The dataset consists of simple
