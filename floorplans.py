@@ -48,9 +48,6 @@ class FloorPlansConfig(Config):
 
     IMAGE_MIN_DIM = 512
     IMAGE_MAX_DIM = 512
-    IMAGE_CHANNEL_COUNT = 3
-    IMAGE_SHAPE = np.array([IMAGE_MAX_DIM, IMAGE_MAX_DIM,
-                            IMAGE_CHANNEL_COUNT])
 
     path = "rooms_augment/"
     files = os.listdir(path)
@@ -130,7 +127,9 @@ class FloorPlansDataset(utils.Dataset):
 
 
 def train():
-    model = MaskRCNN(mode="training", config=FloorPlansConfig,
+    config = FloorPlansConfig
+    config.display()
+    model = MaskRCNN(mode="training", config=config,
                      model_dir=DEFAULT_LOGS_DIR)
 
     print("Loading weights")
