@@ -2278,8 +2278,8 @@ class MaskRCNN():
        # self.log_dir = os.path.join(self.model_dir, "{}{:%Y%m%dT%H%M}".format(
        #     self.config.NAME.lower(), now))
         path = self.model_dir + '/' + time.strftime("%Y%m%d-%H%M")
-        os.mkdir(path)
         self.log_dir = path
+        os.makedirs(path, exist_ok=True)
 
 
         # Path to save after each epoch. Include placeholders that get filled by Keras.
@@ -2371,7 +2371,7 @@ class MaskRCNN():
         # Work-around for Windows: Keras fails on Windows when using
         # multiprocessing workers. See discussion here:
         # https://github.com/matterport/Mask_RCNN/issues/13#issuecomment-353124009
-        if os.name is 'nt':
+        if os.name == 'nt':
             workers = 0
         else:
             workers = multiprocessing.cpu_count()

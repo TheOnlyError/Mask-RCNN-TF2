@@ -106,7 +106,7 @@ class FloorPlansDataset(utils.Dataset):
         specs in image_info.
         """
         img = mpimg.imread('rooms_augment/{}.jpg'.format(image_id))
-        return cv2.resize(img, (512, 512), interpolation=cv2.INTER_AREA)
+        return img
 
     def image_reference(self, image_id):
         """Return the shapes data of the image."""
@@ -123,8 +123,10 @@ class FloorPlansDataset(utils.Dataset):
             one mask per instance.
         class_ids: a 1D array of class IDs of the instance masks.
         """
-        img = mpimg.imread('rooms_augment/{}_close_wall.png'.format(image_id))
-        return cv2.resize(img, (512, 512), interpolation=cv2.INTER_AREA)
+        openings = mpimg.imread('rooms_augment/{}_close.png'.format(image_id))
+        walls = mpimg.imread('rooms_augment/{}_wall.png'.format(image_id))
+        img = np.stack(np.array([openings, walls]), -1)
+        return img
 
 
 def train():
