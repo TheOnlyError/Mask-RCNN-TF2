@@ -12,6 +12,7 @@ import sys
 import random
 import itertools
 import colorsys
+import time
 
 import numpy as np
 from skimage.measure import find_contours
@@ -84,7 +85,7 @@ def display_instances(image, boxes, masks, class_ids, class_names,
                       scores=None, title="",
                       figsize=(16, 16), ax=None,
                       show_mask=True, show_mask_polygon=True, show_bbox=True, 
-                      colors=None, captions=None, show_caption=True, save_fig_path='/',
+                      colors=None, captions=None, show_caption=True, save_fig_path='data/',
                       filter_classes=None, min_score=None):
 
     """
@@ -188,7 +189,8 @@ def display_instances(image, boxes, masks, class_ids, class_names,
                 ax.add_patch(p)
     ax.imshow(masked_image.astype(np.uint8))
     if not (save_fig_path is None):
-        plt.savefig(save_fig_path, bbox_inches="tight")
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        plt.savefig(save_fig_path + timestr, bbox_inches="tight")
     # if auto_show:
     #     plt.show()
 

@@ -63,6 +63,12 @@ class FloorPlansConfig(Config):
     STEPS_PER_EPOCH = train_size
     VALIDATION_STEPS = len(files_set) - train_size
 
+    # Maximum number of ground truth instances to use in one image
+    MAX_GT_INSTANCES = 200
+
+    # Max number of final detections per image
+    DETECTION_MAX_INSTANCES = 400
+
 class FloorPlanInferenceConfig(FloorPlansConfig):
     # Don't resize imager for inferencing
     IMAGE_RESIZE_MODE = "pad64"
@@ -152,10 +158,11 @@ def train():
     print("Loading weights")
 
     load = True
+    weights = 'imagenet'
     if load:
         weights_path = DEFAULT_LOGS_DIR + '/model.h5'
         model.load_weights(weights_path, by_name=True)
-    else:
+    elif weights == 'coco':
         weights_path = COCO_WEIGHTS_PATH
         # Download weights file
         if not os.path.exists(weights_path):
@@ -163,6 +170,9 @@ def train():
         model.load_weights(weights_path, by_name=True, exclude=[
             "mrcnn_class_logits", "mrcnn_bbox_fc",
             "mrcnn_bbox", "mrcnn_mask"])
+    else:
+        weights_path = model.get_imagenet_weights()
+        model.load_weights(weights_path, by_name=True)
     print("Done")
 
     """Train the model."""
@@ -192,7 +202,7 @@ def train():
     # print("Train all layers")
     model.train(dataset_train, dataset_val,
                 learning_rate=LEARNING_RATE,
-                epochs=80,
+                epochs=40,
                 augmentation=None,
                 layers='all')
 
@@ -219,7 +229,7 @@ def predict():
 
     dataset = dataset_train
     i = 0
-    samples = 1
+    samples = 2
     for image_id in dataset.image_ids:
         # Load image and run detection
         image = dataset.load_image(image_id)
@@ -229,10 +239,9 @@ def predict():
         visualize.display_instances(
             image, r['rois'], r['masks'], r['class_ids'],
             dataset.class_names, r['scores'],
-            show_bbox=False, show_mask=False,
-            title="Predictions")
+            show_bbox=False, show_mask=True, show_mask_polygon=True, show_caption=False)
         i += 1
-        if i > samples:
+        if i >= samples:
             break
 
 if __name__ == '__main__':
@@ -242,7 +251,7 @@ if __name__ == '__main__':
     print("Seed: {0}".format(seed))
 
     tic = time.time()
-    # train()
-    predict()
+    train()
+    # predict()
     toc = time.time()
     print('total training + evaluation time = {} minutes'.format((toc - tic) / 60))
