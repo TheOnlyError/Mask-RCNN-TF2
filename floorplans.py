@@ -153,10 +153,8 @@ def train():
 
     load = True
     if load:
-        weights_path = model.find_last()
-        print("Loading weights")
+        weights_path = DEFAULT_LOGS_DIR + '/model.h5'
         model.load_weights(weights_path, by_name=True)
-        print("Done")
     else:
         weights_path = COCO_WEIGHTS_PATH
         # Download weights file
@@ -165,7 +163,7 @@ def train():
         model.load_weights(weights_path, by_name=True, exclude=[
             "mrcnn_class_logits", "mrcnn_bbox_fc",
             "mrcnn_bbox", "mrcnn_mask"])
-        print("Done")
+    print("Done")
 
     """Train the model."""
     # Training dataset.
