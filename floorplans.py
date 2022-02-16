@@ -28,7 +28,7 @@ COCO_WEIGHTS_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
 from mrcnn.config import Config
-from mrcnn import utils
+from mrcnn import utils, visualize
 
 
 class FloorPlansConfig(Config):
@@ -202,10 +202,38 @@ def predict():
     config = FloorPlanInferenceConfig()
     model = MaskRCNN(mode="inference", config=config,
                      model_dir=DEFAULT_LOGS_DIR)
-    weights_path = model.find_last()
+    weights_path = DEFAULT_LOGS_DIR + '/model.h5'
     print("Loading weights")
     model.load_weights(weights_path, by_name=True)
     print("Done")
+
+    # Training dataset.
+    dataset_train = FloorPlansDataset()
+    dataset_train.load_shapes("train")
+    dataset_train.prepare()
+
+    # Validation dataset
+    dataset_val = FloorPlansDataset()
+    dataset_val.load_shapes("val")
+    dataset_val.prepare()
+
+    dataset = dataset_train
+    i = 0
+    samples = 1
+    for image_id in dataset.image_ids:
+        # Load image and run detection
+        image = dataset.load_image(image_id)
+        r = model.detect([image], verbose=0)[0]
+        # timestr = time.strftime("%Y%m%d-%H%M%S")
+        # mpimg.imsave("result" + timestr + ".jpg", r.astype(np.uint8))
+        visualize.display_instances(
+            image, r['rois'], r['masks'], r['class_ids'],
+            dataset.class_names, r['scores'],
+            show_bbox=False, show_mask=False,
+            title="Predictions")
+        i += 1
+        if i > samples:
+            break
 
 if __name__ == '__main__':
     seed = int(random.random() * 1000)
@@ -214,6 +242,7 @@ if __name__ == '__main__':
     print("Seed: {0}".format(seed))
 
     tic = time.time()
-    train()
+    # train()
+    predict()
     toc = time.time()
     print('total training + evaluation time = {} minutes'.format((toc - tic) / 60))
