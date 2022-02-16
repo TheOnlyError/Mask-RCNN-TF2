@@ -150,14 +150,22 @@ def train():
                      model_dir=DEFAULT_LOGS_DIR)
 
     print("Loading weights")
-    weights_path = COCO_WEIGHTS_PATH
-    # Download weights file
-    if not os.path.exists(weights_path):
-        utils.download_trained_weights(weights_path)
-    model.load_weights(weights_path, by_name=True, exclude=[
-        "mrcnn_class_logits", "mrcnn_bbox_fc",
-        "mrcnn_bbox", "mrcnn_mask"])
-    print("Done")
+
+    load = True
+    if load:
+        weights_path = model.find_last()
+        print("Loading weights")
+        model.load_weights(weights_path, by_name=True)
+        print("Done")
+    else:
+        weights_path = COCO_WEIGHTS_PATH
+        # Download weights file
+        if not os.path.exists(weights_path):
+            utils.download_trained_weights(weights_path)
+        model.load_weights(weights_path, by_name=True, exclude=[
+            "mrcnn_class_logits", "mrcnn_bbox_fc",
+            "mrcnn_bbox", "mrcnn_mask"])
+        print("Done")
 
     """Train the model."""
     # Training dataset.
@@ -186,7 +194,7 @@ def train():
     # print("Train all layers")
     model.train(dataset_train, dataset_val,
                 learning_rate=LEARNING_RATE,
-                epochs=40,
+                epochs=80,
                 augmentation=None,
                 layers='all')
 
