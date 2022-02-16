@@ -12,6 +12,7 @@ Written by Waleed Abdulla
 import os
 import random
 import sys
+import time
 
 import cv2
 import matplotlib.image as mpimg
@@ -62,6 +63,12 @@ class FloorPlansConfig(Config):
     STEPS_PER_EPOCH = train_size
     VALIDATION_STEPS = len(files_set) - train_size
 
+class FloorPlanInferenceConfig(FloorPlansConfig):
+    # Don't resize imager for inferencing
+    IMAGE_RESIZE_MODE = "pad64"
+    # Non-max suppression threshold to filter RPN proposals.
+    # You can increase this during training to generate more propsals.
+    RPN_NMS_THRESHOLD = 0.7
 
 class FloorPlansDataset(utils.Dataset):
     """Generates the shapes synthetic dataset. The dataset consists of simple
@@ -96,16 +103,16 @@ class FloorPlansDataset(utils.Dataset):
         for image_id in files_set:
             self.add_image(
                 "floorplans",
-                image_id=image_id,
+                image_id=int(image_id)-1,
                 path=None)
 
-    def load_image(self, image_id):
+    def load_image(self, id):
         """Generate an image from the specs of the given image ID.
         Typically this function loads the image from a file, but
         in this case it generates the image on the fly from the
         specs in image_info.
         """
-        img = mpimg.imread('rooms_augment/{}.jpg'.format(image_id))
+        img = mpimg.imread('rooms_augment/{}.jpg'.format(id+1))
         return img
         # return cv2.resize(img, (512, 512), interpolation=cv2.INTER_AREA)
 
@@ -117,13 +124,14 @@ class FloorPlansDataset(utils.Dataset):
         else:
             super(self.__class__).image_reference(self, image_id)
 
-    def load_mask(self, image_id):
+    def load_mask(self, id):
         """Generate instance masks for an image.
        Returns:
         masks: A bool array of shape [height, width, instance count] with
             one mask per instance.
         class_ids: a 1D array of class IDs of the instance masks.
         """
+        image_id = id + 1
         openings = mpimg.imread('rooms_augment/{}_close.png'.format(image_id))
         # openings = cv2.resize(openings, (512, 512), interpolation=cv2.INTER_AREA)
         openings = openings > 0
@@ -135,6 +143,8 @@ class FloorPlansDataset(utils.Dataset):
 
 
 def train():
+    # nohup python3 -u floorplans.py > output.log &
+
     config = FloorPlansConfig()
     model = MaskRCNN(mode="training", config=config,
                      model_dir=DEFAULT_LOGS_DIR)
@@ -160,26 +170,36 @@ def train():
     dataset_val.load_shapes("val")
     dataset_val.prepare()
 
-    LEARNING_RATE = 1
+    LEARNING_RATE = 1e-4
 
     # *** This training schedule is an example. Update to your needs ***
 
     # If starting from imagenet, train heads only for a bit
     # since they have random weights
-    print("Train network heads")
-    model.train(dataset_train, dataset_val,
-                learning_rate=LEARNING_RATE,
-                epochs=20,
-                augmentation=None,
-                layers='heads')
-
-    # print("Train all layers")
+    # print("Train network heads")
     # model.train(dataset_train, dataset_val,
     #             learning_rate=LEARNING_RATE,
-    #             epochs=40,
+    #             epochs=20,
     #             augmentation=None,
-    #             layers='all')
+    #             layers='heads')
 
+    # print("Train all layers")
+    model.train(dataset_train, dataset_val,
+                learning_rate=LEARNING_RATE,
+                epochs=40,
+                augmentation=None,
+                layers='all')
+
+def predict():
+    # nohup python3 -u floorplans.py > output.log &
+
+    config = FloorPlanInferenceConfig()
+    model = MaskRCNN(mode="inference", config=config,
+                     model_dir=DEFAULT_LOGS_DIR)
+    weights_path = model.find_last()
+    print("Loading weights")
+    model.load_weights(weights_path, by_name=True)
+    print("Done")
 
 if __name__ == '__main__':
     seed = int(random.random() * 1000)
@@ -187,4 +207,7 @@ if __name__ == '__main__':
     random.seed(seed)
     print("Seed: {0}".format(seed))
 
+    tic = time.time()
     train()
+    toc = time.time()
+    print('total training + evaluation time = {} minutes'.format((toc - tic) / 60))
