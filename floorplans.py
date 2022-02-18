@@ -72,6 +72,8 @@ class FloorPlansConfig(Config):
     # Skip detections with < 90% confidence
     DETECTION_MIN_CONFIDENCE = 0.6
 
+    BACKBONE = "resnet50"
+
 class FloorPlanInferenceConfig(FloorPlansConfig):
     # Don't resize imager for inferencing
     IMAGE_RESIZE_MODE = "pad64"
