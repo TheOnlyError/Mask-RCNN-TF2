@@ -69,6 +69,9 @@ class FloorPlansConfig(Config):
     # Max number of final detections per image
     DETECTION_MAX_INSTANCES = 400
 
+    # Skip detections with < 90% confidence
+    DETECTION_MIN_CONFIDENCE = 0.6
+
 class FloorPlanInferenceConfig(FloorPlansConfig):
     # Don't resize imager for inferencing
     IMAGE_RESIZE_MODE = "pad64"
@@ -157,8 +160,8 @@ def train():
 
     print("Loading weights")
 
-    load = True
-    weights = 'imagenet'
+    load = False
+    weights = 'coco'
     if load:
         weights_path = DEFAULT_LOGS_DIR + '/model.h5'
         model.load_weights(weights_path, by_name=True)
@@ -202,47 +205,9 @@ def train():
     # print("Train all layers")
     model.train(dataset_train, dataset_val,
                 learning_rate=LEARNING_RATE,
-                epochs=40,
+                epochs=160,
                 augmentation=None,
                 layers='all')
-
-def predict():
-    # nohup python3 -u floorplans.py > output.log &
-
-    config = FloorPlanInferenceConfig()
-    model = MaskRCNN(mode="inference", config=config,
-                     model_dir=DEFAULT_LOGS_DIR)
-    weights_path = DEFAULT_LOGS_DIR + '/model.h5'
-    print("Loading weights")
-    model.load_weights(weights_path, by_name=True)
-    print("Done")
-
-    # Training dataset.
-    dataset_train = FloorPlansDataset()
-    dataset_train.load_shapes("train")
-    dataset_train.prepare()
-
-    # Validation dataset
-    dataset_val = FloorPlansDataset()
-    dataset_val.load_shapes("val")
-    dataset_val.prepare()
-
-    dataset = dataset_train
-    i = 0
-    samples = 2
-    for image_id in dataset.image_ids:
-        # Load image and run detection
-        image = dataset.load_image(image_id)
-        r = model.detect([image], verbose=0)[0]
-        # timestr = time.strftime("%Y%m%d-%H%M%S")
-        # mpimg.imsave("result" + timestr + ".jpg", r.astype(np.uint8))
-        visualize.display_instances(
-            image, r['rois'], r['masks'], r['class_ids'],
-            dataset.class_names, r['scores'],
-            show_bbox=False, show_mask=True, show_mask_polygon=True, show_caption=False)
-        i += 1
-        if i >= samples:
-            break
 
 if __name__ == '__main__':
     seed = int(random.random() * 1000)
