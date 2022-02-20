@@ -21,7 +21,7 @@ import numpy as np
 # Root directory of the project
 from floorplans import FloorPlanInferenceConfig, FloorPlansDataset
 from mrcnn.model import MaskRCNN
-
+from mrcnn import model as modellib
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 ROOT_DIR = os.path.abspath("data/")
@@ -60,14 +60,11 @@ def predict():
     random.shuffle(ids)
     for image_id in ids:
         # Load image and run detection
-        image = dataset.load_image(image_id)
-        r = model.detect([image], verbose=0)[0]
-        # timestr = time.strftime("%Y%m%d-%H%M%S")
-        # mpimg.imsave("result" + timestr + ".jpg", r.astype(np.uint8))
-        visualize.display_instances(
-            image, r['rois'], r['masks'], r['class_ids'],
-            dataset.class_names, r['scores'],
-            show_bbox=False, show_mask=True, show_mask_polygon=True, show_caption=False)
+        # Load and display
+        image, image_meta, class_ids, bbox, mask = modellib.load_image_gt(
+            dataset, config, image_id, use_mini_mask=False)
+        visualize.display_instances(image, bbox, mask, class_ids, dataset.class_names,
+                                    show_bbox=False)
         i += 1
         if i >= samples:
             break

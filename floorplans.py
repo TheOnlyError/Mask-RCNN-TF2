@@ -162,10 +162,10 @@ def train():
 
     print("Loading weights")
 
-    load = False
+    load = True
     weights = 'coco'
     if load:
-        weights_path = DEFAULT_LOGS_DIR + '/model.h5'
+        weights_path = DEFAULT_LOGS_DIR + '/model3.h5'
         model.load_weights(weights_path, by_name=True)
     elif weights == 'coco':
         weights_path = COCO_WEIGHTS_PATH
@@ -207,7 +207,7 @@ def train():
     # print("Train all layers")
     model.train(dataset_train, dataset_val,
                 learning_rate=LEARNING_RATE,
-                epochs=160,
+                epochs=240,
                 augmentation=None,
                 layers='all')
 
